@@ -13,13 +13,16 @@ pipeline {
   environment {
     DOCKER_IMAGE_NAME = "fixxx/omslagroute"
     APP = "omslagroute"
+    DOCKER_REGISTRY = "repo.secure.amsterdam.nl"
   }
 
   stages {
     stage("Checkout") {
-      checkout scm
-      environment {
-        COMMIT_HASH = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+      steps {
+        checkout scm
+        script {
+          env.COMMIT_HASH = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+        }
       }
     }
 
@@ -33,8 +36,8 @@ pipeline {
       when { not { buildingTag() } }
 
       steps {
-        docker.withRegistry("${docker_registry_host}",'docker_registry_auth') {
-          def image = docker.build("${env.DOCKER_IMAGE}:${env.COMMIT_HASH}",
+        script {
+          def image = docker.build("${env.DOCKER_REGISTRY}/${env.DOCKER_IMAGE}:${env.COMMIT_HASH}",
             "--no-cache " +
             "--shm-size 1G " +
             " ./app")
@@ -47,8 +50,8 @@ pipeline {
     stage("Push acceptance image") {
       when { not { buildingTag() } }
       steps {
-        docker.withRegistry("${docker_registry_host}",'docker_registry_auth') {
-          def image = docker.image("${env.DOCKER_IMAGE}:${env.COMMIT_HASH}")
+        script {
+          def image = docker.image("${env.DOCKER_REGISTRY}/${env.DOCKER_IMAGE}:${env.COMMIT_HASH}")
           image.push("acceptance")
         }
       }
@@ -56,19 +59,21 @@ pipeline {
 
     stage("Deploy to acceptance") {
       when { not { buildingTag() } }
-      build job: 'Subtask_Openstack_Playbook',
-        parameters: [
-            [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
-            [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
-            [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e platform=secure -e app=${env.APP}"],
-        ]
+      steps {
+        build job: 'Subtask_Openstack_Playbook',
+          parameters: [
+              [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
+              [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
+              [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e platform=secure -e app=${env.APP}"],
+          ]
+      }
     }
 
     stage("Push production image") {
       when { buildingTag() }
       steps {
-        docker.withRegistry("${docker_registry_host}",'docker_registry_auth') {
-          def image = docker.image("${env.DOCKER_IMAGE}:${env.COMMIT_HASH}")
+        script {
+          def image = docker.image("${env.DOCKER_REGISTRY}/${env.DOCKER_IMAGE}:${env.COMMIT_HASH}")
           image.push("production")
         }
       }
@@ -76,12 +81,14 @@ pipeline {
 
     stage("Deploy to production") {
       when { buildingTag() }
-      build job: 'Subtask_Openstack_Playbook',
-        parameters: [
-            [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
-            [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
-            [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: '-e platform=secure -e app=omslagroute'],
-        ]
+      steps {
+        build job: 'Subtask_Openstack_Playbook',
+          parameters: [
+              [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
+              [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
+              [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: '-e platform=secure -e app=omslagroute'],
+          ]
+      }
     }
   }
 }
