@@ -100,3 +100,8 @@
         top: 2px;
     }
 }
+
+.downloads--list .document__new {
+    @extend .button;
+    @extend .button--primary;
+}

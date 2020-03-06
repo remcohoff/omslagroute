@@ -12,7 +12,7 @@
             {% include 'documents/snippets/document_list.html' %}
         {% else %}
             {% if request.user.is_authenticated %}
-                <ul class="downloads {% if request.user.is_authenticated %}downloads--logged_in{% endif %}">
+                <ul class="downloads {% if request.user.is_authenticated %}downloads--logged_in{% endif %} {% if class %}downloads--{{ class }}{% endif %}">
                     {% include 'documents/snippets/upload.html' %}
                 </ul>
             {% else %}

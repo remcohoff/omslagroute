@@ -42,7 +42,7 @@
 }
 
 .document__name {
-    color: $primary-black;
+    // color: $primary-black;
     margin-bottom: 0;
     white-space:normal;
 
@@ -84,8 +84,8 @@
     &:hover,
     &:focus {
         text-decoration: none;
-        border-right: 2px solid $primary-red;
-        border-bottom: 2px solid $primary-red;
+        border-right-color: $primary-red;
+        border-bottom-color: $primary-red;
         color: $primary-black;
 
         .document__name {
@@ -112,4 +112,77 @@
 .document__change {
     border-top: .5rem solid #fff;
     margin: 0;
+}
+
+// experimental list view
+@media screen and (min-width: $desktop) {
+
+    .downloads--list {
+        display: table;
+        width: 100%;
+
+        .document {
+            width: 100%;
+            flex-direction: row;
+            padding: 1rem;
+            border-bottom: 1px solid $neutral-grey4;
+        }
+
+        .document--add {
+            border-bottom: 0;
+            padding: 1rem 0;
+        }
+
+        .document__version {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            border: 0px solid transparent;
+            align-items: center;
+            padding: 0;
+        }
+
+        .document__icon {
+            transform: scale(.5);
+        }
+
+        .document__header {
+            flex: 1 1 auto;
+            text-align: left;
+            padding-left: 30px;
+        }
+
+        .document__name {
+            margin-top: 0;
+        }
+
+        .document__date {
+            margin-left: .5rem;
+            margin-right: 2rem;
+        }
+
+        .document__change {
+            border-top: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            flex-direction: column;
+        }
+
+        .document__new {
+            flex-direction: row;
+        }
+
+        .document__icon-wrapper {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+        }
+
+        .button__icon {
+            transform: scale(.5);
+            transform-origin: top left;
+        }
+    }
 }
